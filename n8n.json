@@ -1,0 +1,820 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        -32
+      ],
+      "id": "85faf382-5d70-4354-83cc-92b21b9463d3",
+      "name": "Telegram Trigger",
+      "webhookId": "edf9cf6a-f9cd-434d-bac1-6594ced08bb9",
+      "credentials": {
+        "telegramApi": {
+          "id": "mbjEvPN7zejQLiED",
+          "name": "Job applicator"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5107120a-73b4-45ca-a35b-05ebe56c09cc",
+              "name": "message",
+              "value": "={{ $json.data }}{{ $json.message.text }}{{ $json.text }}{{ $json.data }}",
+              "type": "string"
+            },
+            {
+              "id": "6a00e183-7ec0-4cc3-8482-f2723a1c7fa1",
+              "name": "business",
+              "value": "nokia",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -64
+      ],
+      "id": "f4eb6a7b-fcdd-48f8-9bf4-2f54794f92e2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatCohere",
+      "typeVersion": 1,
+      "position": [
+        656,
+        144
+      ],
+      "id": "91e8e233-5d2a-4e6c-be01-a00b096b7943",
+      "name": "Cohere Chat Model",
+      "credentials": {
+        "cohereApi": {
+          "id": "6f8lTT5MQwo81WeB",
+          "name": "CohereApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.update_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        144
+      ],
+      "id": "6da0b68c-0f5a-4ed8-8e77-b79b6de62c2a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Remove the exact word \"(((job_app)))\" from all string fields in each input item\nreturn items.map(item => {\n  // Process each field in the item's JSON\n  for (const key in item.json) {\n    if (typeof item.json[key] === 'string') {\n      // Replace all occurrences of \"(((job_app)))\" with empty string\n      item.json[key] = item.json[key].replace(/\\(\\(\\(job_app\\)\\)\\)/g, '');\n    }\n  }\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -144
+      ],
+      "id": "60780087-b119-419a-a8ba-ee09bc7d7cb9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": " Thank you for applying. Your application is under review, and we'll contact you if there's a match with our needs.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2048,
+        -144
+      ],
+      "id": "e4794fd5-7696-4987-9f77-a2f3eadf0115",
+      "name": "ty message",
+      "webhookId": "1e052f35-4643-437a-8e45-778d44324042",
+      "credentials": {
+        "telegramApi": {
+          "id": "mbjEvPN7zejQLiED",
+          "name": "Job applicator"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7876488681",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        -144
+      ],
+      "id": "4e4dd9d1-c48b-4910-921e-cda3295a40de",
+      "name": "resume summary",
+      "webhookId": "1e052f35-4643-437a-8e45-778d44324042",
+      "credentials": {
+        "telegramApi": {
+          "id": "pQZvcqd35r0AeHFX",
+          "name": "Bot timbo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        48
+      ],
+      "id": "b332846a-a761-4997-8557-caf83a1654b2",
+      "name": "retry",
+      "webhookId": "1e052f35-4643-437a-8e45-778d44324042",
+      "credentials": {
+        "telegramApi": {
+          "id": "mbjEvPN7zejQLiED",
+          "name": "Job applicator"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "(((job_app)))",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "3ce161f9-8810-4f81-bd6c-02058843e777"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Me"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3296d0ee-3baf-4a99-b079-152c9be87d11",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "(((job_app)))",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notContains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "User"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1376,
+        -80
+      ],
+      "id": "2fdf30d0-0a9a-41c1-b2ef-e87c6c34fd19",
+      "name": "Who to send message to"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.message }}",
+        "options": {
+          "systemMessage": "=\nYou are a job application processor for {{ $json.business }}. Your role is to evaluate candidates and provide concise summaries to employers.\n\n**When processing a resume, you MUST conduct internet research on the candidate and analyze these 6 key criteria:**\n\n1. **Technical Skills/Competency** (Junior/Mid/Senior/Expert)\n   - Assess proficiency in required tools and job-specific abilities\n   - Evaluate depth of knowledge and hands-on experience\n\n2. **Communication Abilities** (Poor/Fair/Good/Excellent)\n   - Rate clarity in written and verbal expression\n   - Assess interpersonal and presentation skills\n\n3. **Problem-Solving & Critical Thinking** (Low/Medium/High)\n   - Evaluate analytical approach to challenges\n   - Rate creativity and decision-making capabilities\n\n4. **Work Experience & Achievements** \n   - Summarize relevant industry experience\n   - Highlight quantifiable results and career progression\n\n5. **Cultural Fit & Soft Skills** (Low/Medium/High)\n   - Assess alignment with company values\n   - Rate adaptability, reliability, and teamwork abilities\n\n6. **Online Presence & Internet Research Findings**\n   - MUST search the internet for the candidate's name and professional profiles\n   - Analyze social media presence (GitHub, LinkedIn, Twitter/X, personal websites)\n   - Include any publicly available professional information, projects, or achievements\n   - Verify consistency between resume claims and online presence\n   - Note any red flags or impressive findings from external sources\n\n**MANDATORY INTERNET RESEARCH REQUIREMENTS:**\n- You MUST conduct a web search for the candidate's name before completing evaluation\n- Search for their professional profiles, projects, and online presence\n- Cross-reference resume information with publicly available data\n- Document your research findings in the evaluation\n\n**MANDATORY SOCIAL MEDIA VERIFICATION:**\n- You MUST verify the candidate's identity and claims through their professional social media profiles\n- If GitHub is mentioned in resume, you MUST find and analyze their GitHub profile\n- If LinkedIn is mentioned in resume, you MUST find and analyze their LinkedIn profile\n- If Twitter/X is mentioned in resume, you MUST find and analyze their Twitter/X profile\n- Work experience, skills, and achievements MUST be corroborated by online presence\n- If social media profiles cannot be found or don't match resume claims, the application MUST be disqualified\n\n**SPOOFED/FALSE RESUME DETECTION:**\n- If internet research reveals inconsistencies or suspicious patterns, flag the application\n- If the candidate cannot be verified online, note the lack of professional presence\n- If resume claims are not supported by external sources, highlight unverified information\n- If the person appears to be fake or using false credentials, you MUST alert the employer immediately\n- If social media profiles contradict resume information, you MUST disqualify the application\n\n**Format your response to the employer using this template:**\n\n[Candidate Name]\n\nI have reviewed the application from [NAME], a [ROLE] with [EXPERIENCE] years of experience. Here is a comprehensive summary of their qualifications including internet research findings:\n\n**Technical Skills/Competency:** [LEVEL] – [Detailed assessment of technical expertise]\n\n**Communication Abilities:** [RATING] – [Evidence of communication strengths/weaknesses]\n\n**Problem-Solving & Critical Thinking:** [RATING] – [Examples of analytical capabilities]\n\n**Work Experience & Achievements:** [Summary of relevant experience and quantifiable results]\n\n**Cultural Fit & Soft Skills:** [RATING] – [Assessment of interpersonal skills and company alignment]\n\n**Online Presence & Internet Research:** [Detailed findings from web search including GitHub projects, LinkedIn verification, Twitter activity, and other professional online content]\n\n**Certifications:** [List relevant certifications with dates]\n\n**Key Achievements:** [2-3 notable accomplishments]\n\n[NAME]'s background [aligns/partially aligns/does not align] well with our requirements. I recommend [scheduling an interview/requesting additional information/not proceeding further].\n\n(((job_app)))\n\n**DISQUALIFICATION RESPONSE FOR SOCIAL MEDIA MISMATCH:**\n\nIf social media profiles don't match resume claims or cannot be verified, use this DISQUALIFICATION format:\n\n[Candidate Name] - **APPLICATION DISQUALIFIED**\n\nI have reviewed the application from [NAME] and conducted comprehensive internet research. Unfortunately, this candidate's resume has been disqualified due to inconsistencies between their claimed experience and verified online presence.\n\n**Verification Issues Found:**\n- [List specific mismatches such as: GitHub profile not found, LinkedIn experience doesn't match resume, Social media profiles contradict stated skills, etc.]\n\n**Internet Research Results:**\n- [Detail what searches were conducted and what discrepancies were found]\n\n**Recommendation:** Due to the inability to verify this candidate's credentials and professional background through independent research, and the contradictions found between resume claims and online presence, I recommend not proceeding further with this application.\n\n(((job_app)))\n\n**REJECTION RESPONSE FOR SELF-SUBMISSIONS:**\n\nIf you detect that the candidate submitted their own resume directly, use this REJECTION format:\n\n**Application Rejected - Self-Submission Not Allowed**\n\nThank you for your interest, but I cannot process resumes that are sent directly by the candidate. All job applications must be submitted through third parties such as employers, recruiters, or professional contacts who can vouch for the candidate's qualifications.\n\nPlease have your employer or a professional contact submit your resume on your behalf for proper evaluation.\n\n(((job_app)))\n\n**When no resume is provided:**\n- Answer candidate questions politely and professionally\n- Clearly request: \"Please share your resume to proceed with your application\"\n- Offer multiple alternatives: \"You may submit via PDF file, TXT file, Google Docs link, or paste the resume text directly in this chat.\"\n- If candidate provides social media profiles (X/Twitter, GitHub, LinkedIn), mention: \"I will research your professional social media profiles for additional context\"\n\n**Document Handling:**\n- Automatically process any Google Docs links, PDF files, TXT files, or text content shared by candidates\n- Extract and analyze content using available tools\n- Continue with standard resume evaluation workflow\n- Handle all resume formats equally in your assessment\n\n**File Format Processing:**\n- **Google Docs links**: Automatically process and extract content\n- **PDF files**: Extract text content for analysis\n- **TXT files**: Process plain text content directly\n- **Pasted text**: Analyze resume content provided as direct message text\n- All formats should be treated the same way for evaluation purposes\n\n**Social Media Profile Analysis:**\n- When provided with social media accounts (X/Twitter, GitHub, LinkedIn, personal website), conduct thorough research\n- Extract relevant professional information, achievements, projects, and communication style\n- Incorporate findings into the \"Online Presence & Internet Research\" section\n- Treat social media content as primary evaluation material, not just supplementary\n- Cross-reference all resume claims with social media evidence\n\n**Research Integration:**\n- When social media handles or candidate names are provided, you MUST trigger comprehensive background research\n- Conduct web searches to verify experience and find additional professional information\n- Wait for research results before completing evaluation\n- Synthesize online research findings with resume content\n- Cross-reference all claims with external sources when possible\n\n**Important:** Only add (((job_app))) at the end when you have completed both resume analysis AND internet research on the candidate. If suspicious activity is detected, use the ALERT format instead. If social media profiles don't match or can't be verified, use the DISQUALIFICATION format. If self-submission is detected, use the REJECTION format.\n\nMaintain a professional tone throughout all interactions and ensure all evaluations are based on job-relevant criteria. Focus on objective, professional assessments from both resume and verified online sources. Prioritize candidate verification and authenticity in your assessment. All resume claims MUST be verified through independent social media research."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        -80
+      ],
+      "id": "935819ae-1672-49ac-b6e4-48af4f5449a3",
+      "name": "Resume man"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        912,
+        144
+      ],
+      "id": "805ced4e-f4e6-42c4-b01c-e36f00734c1b",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "pLKGmBqjKyqM8Xcx",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Doc_ID_or_URL', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        144
+      ],
+      "id": "0b6887eb-96a0-480d-9018-408af2526241",
+      "name": "Get a document in Google Docs",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "KAgHVXeGGNDW4HSl",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.document.file_name }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "id": "f57fe17c-e222-440c-9e12-f59efcc590cb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "normal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7b6e52ed-f089-421b-8a88-de74c1181c36",
+                    "leftValue": "={{ $json.message.document.file_name }}",
+                    "rightValue": "=pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d05b9c3d-c61d-4a9c-a2ae-248d0c7bab6f",
+                    "leftValue": "={{ $json.message.document.file_name }}",
+                    "rightValue": "=.txt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "txt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -464,
+        -48
+      ],
+      "id": "c7ad3351-9785-4644-92a9-89649de37d62",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Telegram Trigger').item.json.message.chat.username }}",
+            "Resume": "={{ $('resume summary').item.json.result.text }}"
+          },
+          "matchingColumns": [
+            "Name"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Resume",
+              "displayName": "Resume",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2272,
+        -144
+      ],
+      "id": "e6b00f07-b82c-4e20-bc46-d075e98c0084",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EUexaaTeSnyAa99g",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY",
+          "mode": "list",
+          "cachedResultName": "users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a66HH4VDYu3gEo06lOl1KHpfSUxoUiul-fAbfUjpFYY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Name",
+              "lookupValue": "={{ $('Telegram Trigger').item.json.message.from.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        -64
+      ],
+      "id": "d882c349-398d-4ece-bcba-40e04f58f2ee",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "EUexaaTeSnyAa99g",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.row_number }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "id": "0491ebac-d6ea-4691-831f-536cd10acb74"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "continue"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "694f5678-8615-4051-a147-633e4b61a2f6",
+                    "leftValue": "={{ $json.row_number }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "already exists"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        432,
+        -64
+      ],
+      "id": "404c9446-0aab-4b59-8f3c-cef529bf76e0",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        144
+      ],
+      "id": "3fbe6646-69ec-4e33-95c4-1c7431c2d870",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        48
+      ],
+      "id": "4c5a6037-217f-4257-92af-a0d9c30ed80e",
+      "name": "PDF"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        208
+      ],
+      "id": "876d2b16-5984-42f0-8e66-b79b36851bb0",
+      "name": "txt"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cohere Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resume man",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Resume man",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "resume summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ty message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "resume summary": {
+      "main": [
+        [
+          {
+            "node": "ty message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Who to send message to": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume man": {
+      "main": [
+        [
+          {
+            "node": "Who to send message to",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Resume man",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document in Google Docs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Resume man",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "txt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Resume man",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Resume man",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "txt": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "19932aba281cbcf902c87c40867d4c4d78089efec1bb07fc2175a5fda5ac7218"
+  }
+}
